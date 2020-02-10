@@ -2,7 +2,6 @@ import cv2
 import sys
 import numpy as np
 
-
 def abrir_imagem(img_caminho):
 
     imagem = cv2.imread(img_caminho)
@@ -32,37 +31,32 @@ def main():
     #Aplicação de um filtro de gradiente para extração de bordas
     # Lembrando que o filtro de canny já faz a suavização
     canny = cv2.Canny(img_binarizada, 100,200)
-    sobel = cv2.Sobel(img_binarizada,cv2.CV_16F,1,0,ksize=5)
 
     # Operações morfológicas: Closing e operação para destacar linhas horizontais
 
-    kernel_close = np.ones((7, 7),np.uint8)
-    operacao_closing = cv2.morphologyEx(canny, cv2.MORPH_DILATE, kernel_close, iterations=1)
+    kernel = np.ones((5, 5),np.uint8)
+    operacao_closing = cv2.morphologyEx(canny, cv2.MORPH_CROSS, kernel, iterations=1)
 
-    kernel = np.ones((1, 11),np.uint8)
-    operacao_closing = cv2.morphologyEx(operacao_closing, cv2.MORPH_RECT, kernel, iterations=1)
-
-
+    mostrar(operacao_closing)
     # Encontrar linhas com o algoritmo de hough
     l_linhas = cv2.HoughLines(operacao_closing,1,np.pi/180, 80)
+
 
     for linha in l_linhas:
         for raio,theta in linha:
             
             # Remove todas as linhas que não sejam horizontais
-            if(theta<0.999*(np.pi/2.0) or theta>1.001*(np.pi/2.0)):
+            if(theta>0.001 and (theta<0.999*(np.pi/2.0) or theta>1.001*(np.pi/2.0))):
                 continue
-            
-
             seno = np.cos(theta) 
             cosseno = np.sin(theta) 
             
             x0 = seno*raio
             y0 = cosseno*raio
 
-            x1 = int(x0 + 800*(-cosseno))
+            x1 = int(x0 + 10000*(-cosseno))
 
-            y1 = int(y0 + 800*(seno))
+            y1 = int(y0 + 10000*(seno))
 
             x2 = int(x0 - 800*(-cosseno)) 
 

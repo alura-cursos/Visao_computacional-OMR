@@ -1,6 +1,8 @@
 # OMR-oriented-to-MCQ
 
-This make part of computer vision courses, in this depository we use image processing to recognize mark choice in tests
+This make part of computer vision courses, in this depository we use image processing to recognize mark choice in tests.
+
+The goal of the course is to use some simple image processing methods to create an algorithm able to detect and recognize the choice in multiple-choice test based.
 
 ## Data test
 
@@ -9,7 +11,12 @@ This data set for test is extracted and modified from the original [data set](ht
 # Content of this course
 
 > You will learn:
->   - morphological operations
->       - Dilatation
->       - Erosion
 >
+>   - Basic image operations
+>      - Read and open the image
+>      - Show an image in a window
+>   - Transformation filters
+>       - Threshold
+>       - Canny
+>       - mophological
+>   - Find lines with Hough's transform
