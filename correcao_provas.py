@@ -17,6 +17,23 @@ def mostrar(imagem, nome_tela='imagem'):
     while(cv2.waitKey(1)!=27):
         pass
 
+def hough_para_cartesiano(raio, theta):
+
+    seno = np.cos(theta) 
+    cosseno = np.sin(theta) 
+
+    x0 = seno*raio
+    y0 = cosseno*raio
+
+    x1 = int(x0 + 10000*(-cosseno))
+
+    y1 = int(y0 + 10000*(seno))
+
+    x2 = int(x0 - 800*(-cosseno)) 
+
+    y2 = int(y0 - 800*(seno)) 
+
+    return x1, y1, x2, y2
 
 def main():
 
@@ -32,15 +49,20 @@ def main():
     # Lembrando que o filtro de canny já faz a suavização
     canny = cv2.Canny(img_binarizada, 100,200)
 
-    # Operações morfológicas: Closing e operação para destacar linhas horizontais
+    # Operações morfológicas: Operação para destacar linhas horizontais e verticais e operação Closing
 
-    kernel = np.ones((5, 5),np.uint8)
-    operacao_closing = cv2.morphologyEx(canny, cv2.MORPH_CROSS, kernel, iterations=1)
+
+    kernel_cross = cv2.getStructuringElement(cv2.MORPH_CROSS, (5,5))
+    operacao_cross = cv2.morphologyEx(canny, cv2.MORPH_CROSS, kernel_cross, iterations=1)
+    kernel_closing = np.ones((5, 5),np.uint8)
+    operacao_closing = cv2.morphologyEx(operacao_cross, cv2.MORPH_CROSS, kernel_closing, iterations=3)
+
+    kernel_erosao = cv2.getStructuringElement(cv2.MORPH_ERODE, (3,3))
+    operacao_closing = cv2.morphologyEx(operacao_cross, cv2.MORPH_ERODE, kernel_erosao, iterations=1)
 
     mostrar(operacao_closing)
     # Encontrar linhas com o algoritmo de hough
     l_linhas = cv2.HoughLines(operacao_closing,1,np.pi/180, 80)
-
 
     for linha in l_linhas:
         for raio,theta in linha:
@@ -48,23 +70,14 @@ def main():
             # Remove todas as linhas que não sejam horizontais
             if(theta>0.001 and (theta<0.999*(np.pi/2.0) or theta>1.001*(np.pi/2.0))):
                 continue
-            seno = np.cos(theta) 
-            cosseno = np.sin(theta) 
-            
-            x0 = seno*raio
-            y0 = cosseno*raio
 
-            x1 = int(x0 + 10000*(-cosseno))
+            x1,y1,x2,y2 = hough_para_cartesiano(raio, theta)
 
-            y1 = int(y0 + 10000*(seno))
-
-            x2 = int(x0 - 800*(-cosseno)) 
-
-            y2 = int(y0 - 800*(seno)) 
-            
-            cv2.line(img_original,(x1,y1), (x2,y2), (0,0,255),2)
-
-    mostrar(img_original)
+            if(np.isclose(theta,0.0)):
+                cv2.line(img_original,(x1,y1), (x2,y2), (0,0,255),2)
+            else:
+                cv2.line(img_original,(x1,y1), (x2,y2), (0,255, 0),2)
+)
 
 
 if __name__=='__main__':
