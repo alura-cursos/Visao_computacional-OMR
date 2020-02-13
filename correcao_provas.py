@@ -19,21 +19,29 @@ def mostrar(imagem, nome_tela='imagem'):
 
 def hough_para_cartesiano(raio, theta):
 
-    seno = np.cos(theta) 
-    cosseno = np.sin(theta) 
+    seno = np.cos(theta)
+    cosseno = np.sin(theta)
 
-    x0 = seno*raio
-    y0 = cosseno*raio
+    x = seno*raio
+    y = cosseno*raio
 
-    x1 = int(x0 + 10000*(-cosseno))
+    return (x, y)
 
-    y1 = int(y0 + 10000*(seno))
+def criar_linhas(pontos, theta):
 
-    x2 = int(x0 - 800*(-cosseno)) 
+    seno = np.cos(theta)
+    cosseno = np.sin(theta)
 
-    y2 = int(y0 - 800*(seno)) 
+    x1 = int(pontos[0] + 10000*(-cosseno))
+
+    y1 = int(pontos[1] + 10000*(seno))
+
+    x2 = int(pontos[0] - 800*(-cosseno)) 
+
+    y2 = int(pontos[1] - 800*(seno)) 
 
     return x1, y1, x2, y2
+
 
 def main():
 
@@ -63,21 +71,28 @@ def main():
     mostrar(operacao_closing)
     # Encontrar linhas com o algoritmo de hough
     l_linhas = cv2.HoughLines(operacao_closing,1,np.pi/180, 80)
+    bounding_box = np.zeros(shape=(2,2)) # [[0., 0].       SUPERIOR-ESQUERDO (x,y)
+                                        #   [0., 0.]]      INFERIOR-DIREITO  (x,y)
 
     for linha in l_linhas:
         for raio,theta in linha:
-            
+
             # Remove todas as linhas que não sejam horizontais
             if(theta>0.001 and (theta<0.999*(np.pi/2.0) or theta>1.001*(np.pi/2.0))):
                 continue
 
-            x1,y1,x2,y2 = hough_para_cartesiano(raio, theta)
+            x, y = hough_para_cartesiano(raio, theta)
+            x1,y1,x2,y2 = criar_linhas((x,y), theta)
+
+            if (y>bounding_box[0][1] and bounding_box): # bounding_box[0][1] = y superior esquerdo
+                bounding_box
 
             if(np.isclose(theta,0.0)):
                 cv2.line(img_original,(x1,y1), (x2,y2), (0,0,255),2)
             else:
                 cv2.line(img_original,(x1,y1), (x2,y2), (0,255, 0),2)
-)
+
+    mostrar(img_original)
 
 
 if __name__=='__main__':
