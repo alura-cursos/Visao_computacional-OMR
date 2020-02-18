@@ -78,7 +78,7 @@ def main():
         for raio,theta in linha:
 
             # Remove todas as linhas que não sejam horizontais
-            if(theta>0.001 and (theta<0.999*(np.pi/2.0) or theta>1.001*(np.pi/2.0))):
+            if not np.isclose(theta,0.0) and not np.isclose(theta,(np.pi/2.0)):
                 continue
 
             x, y = hough_para_cartesiano(raio, theta)
