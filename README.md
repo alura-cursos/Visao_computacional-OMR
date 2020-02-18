@@ -19,5 +19,6 @@ This data set for test is extracted and modified from the original [data set](ht
 >       - Threshold
 >       - Canny
 >       - mophological
+>   - Object contour finding
 >   - Find lines with Hough's transform
 >   - Color descriptor
