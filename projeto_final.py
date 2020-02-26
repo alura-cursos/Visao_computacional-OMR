@@ -175,37 +175,21 @@ def main(name_file):
                     limites_horizontais[1][0] = raio
                     limites_horizontais[1][1] = theta
 
-    # Desenhar linhas
-    img_copia = img_original.copy()
-    for value in range(2): #0 1
-        #linhas horizontais
-        h_ponto = hough_para_cartesiano(limites_horizontais[value][0], limites_horizontais[value][1])
-        x1,y1,x2,y2 = criar_linhas(h_ponto, (np.pi/2.0))
-        cv2.line(img_copia,(x1,y1), (x2,y2), (0,255, 0),2)
-
-        #linhas verticais
-        v_ponto = hough_para_cartesiano(limites_verticais[value][0], limites_verticais[value][1])
-        x1,y1,x2,y2 = criar_linhas(v_ponto, 0.0)
-        cv2.line(img_copia,(x1,y1), (x2,y2), (0,0,255),2)
-
-
     # Ponto superior esquerdo (se)
     raio_se, theta_se = encontrar_intenseccao(limites_horizontais[0][0], limites_verticais[0][0])
     x_se,y_se = hough_para_cartesiano(raio_se,theta_se)
 
-    cv2.circle(img_copia, (int(x_se),int(y_se)),30,(0,0,0),5)
-
     # Ponto inferior direito (id)
     raio_id, theta_id = encontrar_intenseccao(limites_horizontais[1][0], limites_verticais[1][0])
     x_id,y_id = hough_para_cartesiano(raio_id,theta_id)
-    cv2.circle(img_copia, (int(x_id),int(y_id)),30,(0,0,0),5)
 
 
     nova_imagem = img_binarizada[int(y_se):int(y_id), int(x_se):int(x_id)]
 
 
     respostas = corrige(nova_imagem)
-    print(respostas)
+    for questao in range(1,QTD_QUESTOES):
+        print('Questão {0} letra: {1}'.format(questao, respostas[questao]))
 
 
 if __name__=='__main__':

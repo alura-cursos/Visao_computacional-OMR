@@ -1,0 +1,1 @@
+# Lembrar de mostrar porque pegar as 4 linas extremas em vez de pegar os menores pontos, pois assim teríamos o raio=0 e para isso é preciso encontrar a intersecção da linha
