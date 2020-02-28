@@ -118,9 +118,15 @@ def corrige(imagem):
     
     return respostas
 
-def main(name_file):
+def ler_csv(caminho_csv, nome_prova):
+    conteudo = np.loadtxt(caminho_csv, dtype=str, delimiter=',')
+    indice = np.where(conteudo[:,:1] == nome_prova)[0][0]
 
-    img_original = abrir_imagem(name_file)
+    return conteudo[indice]
+
+def main(nome_arquivo):
+
+    img_original = abrir_imagem(nome_arquivo)
 
     img_gray = cv2.cvtColor(img_original, cv2.COLOR_BGR2GRAY)
 
@@ -188,8 +194,11 @@ def main(name_file):
 
 
     respostas = corrige(nova_imagem)
+    verdadeiras = ler_csv('images-test/corretas.csv', nome_arquivo)
+
+    print('Questão\tletra\tverdadeira')
     for questao in range(1,QTD_QUESTOES):
-        print('Questão {0} letra: {1}'.format(questao, respostas[questao]))
+        print('  {0} \t {1} \t {2}'.format(questao, respostas[questao],verdadeiras[questao]))
 
 
 if __name__=='__main__':

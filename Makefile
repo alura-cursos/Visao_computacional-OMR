@@ -1,2 +1,2 @@
 run:
-	python projeto_final.py images-test/teste9.png
+	python correcao_provas.py images-test/teste2.png

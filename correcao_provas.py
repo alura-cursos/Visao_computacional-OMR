@@ -115,12 +115,18 @@ def corrige(imagem):
     respostas = {}
     for questao in range(1,QTD_QUESTOES):
         respostas[questao] = get_resposta(imagem, questao)
-    
+
     return respostas
 
-def main(name_file):
+def ler_csv(caminho_csv, nome_prova):
+    conteudo = np.loadtxt(caminho_csv, dtype=str, delimiter=',')
+    indice = np.where(conteudo[:,:1] == nome_prova)[0][0]
 
-    img_original = abrir_imagem(name_file)
+    return conteudo[indice]
+    
+def main(nome_arquivo):
+
+    img_original = abrir_imagem(nome_arquivo)
 
     img_gray = cv2.cvtColor(img_original, cv2.COLOR_BGR2GRAY)
 
@@ -132,7 +138,6 @@ def main(name_file):
     canny = cv2.Canny(img_binarizada, 100,200)
 
     # Operações morfológicas: Operação para destacar linhas horizontais e verticais e operação Closing
-
 
     kernel_cross = cv2.getStructuringElement(cv2.MORPH_CROSS, (5,5))
     operacao_cross = cv2.morphologyEx(canny, cv2.MORPH_CROSS, kernel_cross, iterations=1)
@@ -205,7 +210,11 @@ def main(name_file):
 
 
     respostas = corrige(nova_imagem)
-    print(respostas)
+    verdadeiras = ler_csv('images-test/corretas.csv', nome_arquivo)
+
+    print('Questão\tletra\tverdadeira')
+    for questao in range(1,QTD_QUESTOES):
+        print(' {0} \t {1} \t {2}'.format(questao, respostas[questao],verdadeiras[questao]))
 
 
 if __name__=='__main__':
