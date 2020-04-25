@@ -118,44 +118,32 @@ def corrige(imagem):
     
     return respostas
 
-def ler_csv(caminho_csv, nome_prova):
-    conteudo = np.loadtxt(caminho_csv, dtype=str, delimiter=',')
-    indice = np.where(conteudo[:,:1] == nome_prova)[0][0]
+def cortar_imagem(imagem):
 
-    return conteudo[indice]
+    img_gray = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
 
-def main(nome_arquivo):
+    # Preprocessar imagem
+    _, img_binarizada = cv2.threshold(img_gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
-    img_original = abrir_imagem(nome_arquivo)
-
-    img_gray = cv2.cvtColor(img_original, cv2.COLOR_BGR2GRAY)
-
-    # Algoritmo de otsu
-    thres, img_binarizada = cv2.threshold(img_gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-
-    #Aplicação de um filtro de gradiente para extração de bordas
-    # Lembrando que o filtro de canny já faz a suavização
     canny = cv2.Canny(img_binarizada, 100,200)
 
-    # Operações morfológicas: Operação para destacar linhas horizontais e verticais e operação Closing
-
-
     kernel_cross = cv2.getStructuringElement(cv2.MORPH_CROSS, (5,5))
-    operacao_cross = cv2.morphologyEx(canny, cv2.MORPH_CROSS, kernel_cross, iterations=1)
-    kernel_closing = np.ones((5, 5),np.uint8)
-    operacao_closing = cv2.morphologyEx(operacao_cross, cv2.MORPH_CROSS, kernel_closing, iterations=3)
+    operacao_dilate = cv2.morphologyEx(canny, cv2.MORPH_DILATE, kernel_cross, iterations=1)
 
-    kernel_erosao = cv2.getStructuringElement(cv2.MORPH_ERODE, (3,3))
-    operacao_closing = cv2.morphologyEx(operacao_cross, cv2.MORPH_ERODE, kernel_erosao, iterations=1)
+    kernel_rect = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+    operacao_close = cv2.morphologyEx(operacao_dilate, cv2.MORPH_CLOSE, kernel_rect, iterations=3)
 
-    # Encontrar linhas com o algoritmo de hough
-    l_linhas = cv2.HoughLines(operacao_closing,1,np.pi/180, 80)
+    kernel_rect = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+    operacao_open = cv2.morphologyEx(operacao_close, cv2.MORPH_OPEN, kernel_rect, iterations=1)
 
-    limites_horizontais = np.array([[img_original.size,img_original.size],# [[img_size, img_size], MENOR (raio,theta)
-                                [0.0, 0.0]], dtype=np.float64)          #  [0., 0.]], MAIOR (raio,theta)
+    #DETECTAR LINHAS
+    l_linhas = cv2.HoughLines(operacao_open,1,np.pi/180, 80)
 
-    limites_verticais = np.array([[img_original.size,img_original.size],# [[img_size, img_size], MENOR (raio,theta)
-                                  [0.0, 0.0]], dtype=np.float64)        #  [0., 0.]], MAIOR (raio,theta)
+    limites_horizontais = np.array([[imagem.size,imagem.size],# [[img_size, img_size], MENOR (raio,theta)
+                            [0.0, 0.0]], dtype=np.float64)          #  [0., 0.]], MAIOR (raio,theta)
+
+    limites_verticais = np.array([[imagem.size,imagem.size],# [[img_size, img_size], MENOR (raio,theta)
+                                    [0.0, 0.0]], dtype=np.float64)        #  [0., 0.]], MAIOR (raio,theta)
 
     for linha in l_linhas:
         for raio,theta in linha:
@@ -188,12 +176,24 @@ def main(nome_arquivo):
     # Ponto inferior direito (id)
     raio_id, theta_id = encontrar_intenseccao(limites_horizontais[1][0], limites_verticais[1][0])
     x_id,y_id = hough_para_cartesiano(raio_id,theta_id)
-
-
+ 
     nova_imagem = img_binarizada[int(y_se):int(y_id), int(x_se):int(x_id)]
 
+    return nova_imagem
 
-    respostas = corrige(nova_imagem)
+def ler_csv(caminho_csv, nome_prova):
+    conteudo = np.loadtxt(caminho_csv, dtype=str, delimiter=',')
+    indice = np.where(conteudo[:,:1] == nome_prova)[0][0]
+
+    return conteudo[indice]
+
+def main(nome_arquivo):
+
+    imagem = abrir_imagem(nome_arquivo)
+
+    imagem_cortada = cortar_imagem(imagem)
+
+    respostas = corrige(imagem_cortada)
     verdadeiras = ler_csv('images-test/corretas.csv', nome_arquivo)
 
     print('Questão\tletra\tverdadeira')
